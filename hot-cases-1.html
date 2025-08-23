@@ -1,0 +1,110 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMSF Info Hub - Hot SMSF Court Cases</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-100 font-sans">
+    <header class="bg-blue-600 text-white p-4">
+        <h1 class="text-3xl font-bold text-center">SMSF Info Hub</h1>
+        <nav class="mt-4">
+            <ul class="flex justify-center space-x-4">
+                <li><a href="index.html" class="hover:underline">Home</a></li>
+                <li><a href="questions.html" class="hover:underline">Top Questions</a></li>
+                <li><a href="advantages-disadvantages.html" class="hover:underline">Advantages & Disadvantages</a></li>
+                <li><a href="hot-cases.html" class="hover:underline">Hot Cases</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="max-w-4xl mx-auto p-6">
+        <section>
+            <h2 class="text-2xl font-semibold mb-4">Hot SMSF Court Cases</h2>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">Merchant v Commissioner of Taxation [2025]</h3>
+                <p class="mb-4">In April 2025, the Full Court of the Federal Court of Australia delivered a pivotal ruling in the Merchant case, significant for SMSFs despite not directly involving one. The Gordon Merchant Superannuation Fund acquired listed securities worth $5.8 million from the related Merchant Family Trust (MFT) in 2015, triggering a $56.5 million capital loss for MFT, which offset a capital gain from another transaction. The ATO argued the transaction’s primary purpose was tax avoidance, invoking Part IVA of the Income Tax Assessment Act 1936. Additionally, breaches of the SIS Act were alleged, including the sole purpose test (s 62), operating standards (s 34), and financial assistance rules (s 65), resulting in Mr. Merchant’s disqualification as a trustee. The Administrative Appeals Tribunal overturned the disqualification, citing his low risk of future non-compliance and lack of prior warnings. However, the Full Court upheld (2:1) the tax benefit ruling, emphasizing that even market-value transactions can be scrutinized for tax avoidance intent. This case underscores the critical need for SMSF trustees to meticulously assess related-party transactions, ensuring compliance with superannuation laws to avoid severe tax penalties and regulatory consequences. Thorough documentation and professional advice are essential to mitigate risks in such dealings. <a href="https://www.charteredaccountantsanz.com/news-and-analysis/insights/technical-articles/super-cases" class="text-blue-600 hover:underline">Full Case Details</a></p>[](https://www.charteredaccountantsanz.com/member-services/technical/superannuation/super-in-focus/super-cases)
+            </article>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">Bendel v Commissioner of Taxation [2025]</h3>
+                <p class="mb-4">The Federal Court’s decision in Commissioner of Taxation v Bendel [2025] FCAFC 15, delivered on 5 March 2025, clarified the definition of a “loan” under s 10(1) of the SIS Act, impacting SMSFs with investments in pre-1999 unit trusts. Although not an SMSF case, Bendel examined unpaid present entitlements (UPEs) as potential loans. The SMSF held units in a related unit trust, and distributions remained unpaid, raising questions about in-house assets. The ATO argued that UPEs constituted financial accommodation, but the Full Court unanimously held that a UPE does not inherently create an obligation to repay, distinguishing it from a loan under s 109D(3) of the ITAA 1936. This challenges the ATO’s stance in SMSFR 2009/3, suggesting UPEs may not always be in-house assets. However, the ruling’s applicability to SMSFs remains uncertain, as statutory interpretation depends on context, and an ATO appeal to the High Court is possible. SMSF trustees must cautiously manage UPEs, ensuring prompt payment or legal advice to avoid breaching in-house asset rules, which could lead to penalties or loss of tax concessions. <a href="https://www.austlii.edu.au/cgi-bin/viewdoc/au/cases/cth/FCAFC/2025/15.html" class="text-blue-600 hover:underline">Full Case Details</a></p>[](https://www.dbalawyers.com.au/announcements/what-does-bendel-mean-for-smsfs/)
+            </article>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">Cam & Bear Pty Ltd v McGoldrick [2025]</h3>
+                <p class="mb-4">In Cam & Bear Pty Ltd v McGoldrick, an SMSF suffered significant losses due to an auditor’s negligence. The SMSF, managed by Jennifer Campbell and Dr. Lance Bear, invested in what was reported as “unlisted shares” in a friend’s company, suggested by Mr. Anthony Lewis. In reality, these were unsecured loans, misreported as cash. The auditor, Mr. McGoldrick, failed to verify the asset’s recoverability or warn the trustees, despite questioning its nature. When the company was liquidated, the loan was unrecoverable, leading to a lawsuit against McGoldrick. The court found the auditor negligent for not fulfilling his duty to protect the fund’s assets, holding him liable for the losses. This case highlights the critical role of SMSF auditors in ensuring accurate reporting and the risks trustees face when relying on unverified investments. Trustees must engage competent auditors and conduct due diligence on investments, particularly with related parties, to avoid financial loss and ensure compliance with SIS Act requirements. <a href="https://smsfwarehouse.com.au/recent-audit-cases/" class="text-blue-600 hover:underline">Full Case Details</a></p>[](https://smsfwarehouse.com.au/recent-audit-cases/)
+            </article>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">Ryan Wealth Holdings Pty Ltd v Baumgartner [2025]</h3>
+                <p class="mb-4">The Ryan Wealth Holdings Pty Ltd v Baumgartner case involved an SMSF losing over $7 million due to high-risk investments in unsecured loans, advised by financial adviser Mr. Moylan. The sole director, Ms. Trudy Crittle, followed the advice, investing in unlisted unit trusts that later went bankrupt. The SMSF’s auditor, aware of the risky investments, failed to alert the trustee, leading to a lawsuit for negligence. The court ruled that the auditor breached their duty by not highlighting the risks, holding them liable for the losses. This case emphasizes the importance of auditors proactively identifying and reporting high-risk investments in SMSFs. Trustees must ensure their auditors meet professional standards under ASA 230 and ASA 500, and they should seek independent advice before investing in complex or risky assets. Compliance with SIS Act and ATO guidelines is critical to safeguard SMSF assets and avoid significant financial setbacks. <a href="https://smsfwarehouse.com.au/recent-audit-cases/" class="text-blue-600 hover:underline">Full Case Details</a></p>[](https://smsfwarehouse.com.au/recent-audit-cases/)
+            </article>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">Dayman v Dayman [2025]</h3>
+                <p class="mb-4">In Dayman v Dayman [2025] NSWSC 900, decided on 8 August 2025, the NSW Supreme Court dismissed Kate Dayman’s claim for family provision from her late father Brian’s estate, which included superannuation assets. The estate was insolvent, with liabilities exceeding assets by $53,000, and any provision would rely on a notional estate order from Brian’s superannuation. The court prioritized Glenys Dayman’s claim for an unpaid 2004 property settlement, citing her moral and legal entitlement. Kate, a 44-year-old with employment prospects, was deemed adequately provided for. The court criticized Kate’s lack of candour and inappropriate communications, undermining her credibility. This case highlights the complexities of superannuation in estate disputes and the need for SMSF trustees to clearly document death benefit nominations to avoid legal challenges. Compliance with SIS Act regulations, particularly around binding nominations, is crucial for SMSFs. <a href="https://www.charteredaccountantsanz.com/news-and-analysis/insights/technical-articles/super-cases" class="text-blue-600 hover:underline">Full Case Details</a></p>[](https://www.charteredaccountantsanz.com/member-services/technical/superannuation/super-in-focus/super-cases)
+            </article>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">DPP v Maher [2025]</h3>
+                <p class="mb-4">In DPP v Maher [2025] ACTSC 339, decided on 1 August 2025, Jonathan James Maher was convicted of 28 counts of theft for unauthorized withdrawals from a complainant’s bank account while they were hospitalized. The case also involved a superannuation account opened in 2018, funded by compensation, where Maher, acting as power of attorney, misused $200,000. The court acquitted Maher on superannuation-related charges due to insufficient evidence, as the complainant’s cohabitation and timing complicated authorization claims. This case underscores the risks of mismanaging SMSF-related accounts under power of attorney. Trustees must ensure clear authorization and robust documentation to prevent misuse and comply with SIS Act rules, avoiding legal and financial consequences. <a href="https://www.charteredaccountantsanz.com/news-and-analysis/insights/technical-articles/super-cases" class="text-blue-600 hover:underline">Full Case Details</a></p>[](https://www.charteredaccountantsanz.com/member-services/technical/superannuation/super-in-focus/super-cases)
+            </article>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">Marshall v Synchron Advice Pty Ltd [2025]</h3>
+                <p class="mb-4">On 1 August 2025, the Supreme Court of Victoria partially upheld an appeal in Marshall v Synchron Advice Pty Ltd [2025] VSC 458. Noel Marshall and Wealth Foundry Pty Ltd were ordered to indemnify Synchron Advice for a settlement paid to clients following an AFCA recommendation, stemming from improper SMSF advice causing financial losses. The court upheld the broad indemnity clause in the Corporate Authorised Representative Agreement but required Synchron to prove the settlement’s reasonableness. Only $11,270.07 of the settlement and $5,435 in AFCA fees were deemed justified. This case highlights the importance of clear contractual terms in SMSF advisory agreements and the need for advisers to ensure compliance with professional standards to avoid liability. <a href="https://www.charteredaccountantsanz.com/news-and-analysis/insights/technical-articles/super-cases" class="text-blue-600 hover:underline">Full Case Details</a></p>[](https://www.charteredaccountantsanz.com/member-services/technical/superannuation/super-in-focus/super-cases)
+            </article>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">Sidhu v ASIC [2025]</h3>
+                <p class="mb-4">In Sidhu v ASIC [2025] ARTA 994, decided on 7 July 2025, the Administrative Review Tribunal affirmed ASIC’s disqualification of David Sidhu as an approved SMSF auditor. Sidhu failed to maintain adequate documentation and audit evidence for three SMSF audits, breaching ASA 230 and ASA 500 standards. His reliance on assumptions and prior knowledge, coupled with independence breaches under APES 110, compromised audit integrity. The Tribunal rejected a proposed suspension, affirming disqualification for deterrence. This case emphasizes the critical role of auditors in SMSF compliance and the need for rigorous, independent audits to protect fund assets and adhere to ATO regulations. <a href="https://www.charteredaccountantsanz.com/news-and-analysis/insights/technical-articles/super-cases" class="text-blue-600 hover:underline">Full Case Details</a></p>[](https://www.charteredaccountantsanz.com/member-services/technical/superannuation/super-in-focus/super-cases)
+            </article>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">Hill v Zuda Pty Ltd [2021]</h3>
+                <p class="mb-4">In Hill v Zuda Pty Ltd [2021] (High Court case P48/2021), a dependent child challenged a binding death benefit nomination (BDBN) in an SMSF, arguing it was invalid under reg 6.17A of the SIS Regulations. The trust deed directed the deceased’s balance to their partner, excluding the applicant. The WA Court of Appeal dismissed the claim, and the High Court clarified that reg 6.17A applies to SMSFs, reinforcing the need for compliant BDBNs. This case underscores the importance of precise trust deed drafting and compliance with SIS Regulations to ensure valid death benefit distributions in SMSFs, avoiding legal disputes. <a href="https://www.hcourt.gov.au/cases" class="text-blue-600 hover:underline">Full Case Details</a></p>
+            </article>
+            <article class="mb-6">
+                <h3 class="text-xl font-semibold">Montgomery Wools v Commissioner of Taxation [2012]</h3>
+                <p class="mb-4">In Montgomery Wools Pty Ltd v Commissioner of Taxation [2012] AATA 61, the ATO argued that unpaid trust distributions from a related unit trust to an SMSF constituted a loan under s 10(1) of the SIS Act, classifying them as in-house assets. The Administrative Appeals Tribunal agreed, finding the deferred payments provided financial accommodation. However, the 2025 Bendel case raises doubts about this interpretation, suggesting UPEs may not always be loans. This case highlights the risks of UPEs in SMSFs and the need for trustees to promptly address distributions to avoid in-house asset breaches and potential tax penalties. <a href="https://www.austlii.edu.au/cgi-bin/viewdoc/au/cases/cth/AATA/2012/61.html" class="text-blue-600 hover:underline">Full Case Details</a></p>[](https://www.dbalawyers.com.au/announcements/what-does-bendel-mean-for-smsfs/)
+            </article>
+        </section>
+    </main>
+    <footer class="bg-blue-600 text-white p-4 text-center">
+        <p>© 2025 SMSF Info Hub. All rights reserved.</p>
+    </footer>
+</body>
+</html>
