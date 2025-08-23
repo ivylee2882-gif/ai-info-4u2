@@ -1,0 +1,87 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMSF Info Hub - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container flex justify-between items-center">
+            <h1 class="text-2xl font-bold">SMSF Info Hub</h1>
+            <ul class="flex space-x-4">
+                <li><a href="index.html" class="hover:underline">Home</a></li>
+                <li><a href="top-questions.html" class="hover:underline">Top Questions</a></li>
+                <li><a href="advantages-disadvantages.html" class="hover:underline">Advantages & Disadvantages</a></li>
+                <li><a href="hot-cases.html" class="hover:underline">Hot Cases</a></li>
+            </ul>
+        </div>
+    </nav>
+    <main class="container my-8">
+        <h2 class="text-3xl font-bold mb-6">Welcome to SMSF Info Hub</h2>
+        <section class="mb-8">
+            <h3 class="text-2xl font-semibold mb-4">Why Create This Website?</h3>
+            <p class="text-lg">This website is designed for individuals with zero knowledge of Self-Managed Super Funds (SMSFs) to quickly understand their purpose, setup, and management. Our goal is to simplify complex regulations and provide clear, reliable information from trusted sources like the Australian Taxation Office (ATO) and SMSF Association, enhanced by AI-driven updates to keep you informed on the latest rules and cases.</p>
+        </section>
+        <section class="mb-8">
+            <h3 class="text-2xl font-semibold mb-4">History of SMSFs</h3>
+            <p class="text-lg">Self-Managed Super Funds (SMSFs) were introduced in Australia in the 1990s as a flexible retirement savings option. Governed by the Superannuation Industry (Supervision) Act 1993 (SIS Act), SMSFs allow members to act as trustees, giving them control over investment decisions. Over the years, SMSFs have grown in popularity, with over 600,000 funds managing $800 billion in assets by 2025, according to the ATO. They offer tailored investment strategies but come with strict compliance requirements enforced by the ATO.</p>
+        </section>
+        <section>
+            <h3 class="text-2xl font-semibold mb-4">Roles of Main Parties and Regulators</h3>
+            <ul class="list-disc pl-6 text-lg">
+                <li><strong>ATO</strong>: The Australian Taxation Office regulates SMSFs, ensuring compliance with super and tax laws, conducting audits, and enforcing penalties for breaches. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/SMSF-regulation-and-compliance/How-your-SMSF-is-regulated" class="text-blue-600 hover:underline">ATO Regulation</a></li>
+                <li><strong>APRA (Small APRA Funds)</strong>: The Australian Prudential Regulation Authority oversees small APRA funds, an alternative to SMSFs, with professional trustees for those preferring less responsibility.</li>
+                <li><strong>SMSF Association</strong>: A key industry body providing education, advocacy, and guidance to trustees and professionals. <a href="https://www.smsfassociation.com" class="text-blue-600 hover:underline">SMSF Association</a></li>
+            </ul>
+        </section>
+    </main>
+    <footer class="bg-blue-600 text-white p-4 text-center">
+        <p>&copy; 2025 SMSF Info Hub. All rights reserved.</p>
+    </footer>
+</body>
+</html>

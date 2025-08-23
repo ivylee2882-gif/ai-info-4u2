@@ -1,0 +1,127 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMSF Info Hub - Top Questions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .accordion-button { cursor: pointer; }
+        .accordion-content { display: none; }
+        .accordion-content.active { display: block; }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('.accordion-button');
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    content.classList.toggle('active');
+                });
+            });
+        });
+    </script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container flex justify-between items-center">
+            <h1 class="text-2xl font-bold">SMSF Info Hub</h1>
+            <ul class="flex space-x-4">
+                <li><a href="index.html" class="hover:underline">Home</a></li>
+                <li><a href="top-questions.html" class="hover:underline">Top Questions</a></li>
+                <li><a href="advantages-disadvantages.html" class="hover:underline">Advantages & Disadvantages</a></li>
+                <li><a href="hot-cases.html" class="hover:underline">Hot Cases</a></li>
+            </ul>
+        </div>
+    </nav>
+    <main class="container my-8">
+        <h2 class="text-3xl font-bold mb-6">Top Questions About SMSFs</h2>
+        <section class="mb-8">
+            <h3 class="text-2xl font-semibold accordion-button bg-blue-200 p-4 rounded">Who Can Set Up an SMSF?</h3>
+            <div class="accordion-content bg-white p-4 rounded">
+                <ul class="list-disc pl-6 text-lg">
+                    <li><strong>Who is eligible?</strong> Australian residents over 18 who are not disqualified under the SIS Act. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/Before-you-start-an-SMSF" class="text-blue-600 hover:underline">ATO Eligibility</a></li>
+                    <li><strong>Can minors be members?</strong> Yes, with a parent or guardian as trustee. <a href="https://www.smsfassociation.com" class="text-blue-600 hover:underline">SMSF Association</a></li>
+                    <li><strong>Maximum members?</strong> Up to six members, typically family or business associates. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/Setting-up-an-SMSF" class="text-blue-600 hover:underline">ATO Setup</a></li>
+                    <li><strong>Can non-residents join?</strong> Yes, if residency conditions are met. <a href="https://tdv.ato.acc.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/SMSF-residency-relief" class="text-blue-600 hover:underline">ATO Residency</a></li>
+                    <li><strong>Disqualified persons?</strong> Bankrupts or those convicted of dishonesty offenses cannot be trustees. <a href="https://www.smsfassociation.com/technically-speaking-ato-disqualifying-smsf-trustees-part-2" class="text-blue-600 hover:underline">SMSF Association</a></li>
+                </ul>
+            </div>
+            <h3 class="text-2xl font-semibold accordion-button bg-blue-200 p-4 rounded mt-4">Why Set Up an SMSF?</h3>
+            <div class="accordion-content bg-white p-4 rounded">
+                <ul class="list-disc pl-6 text-lg">
+                    <li><strong>What’s the main benefit?</strong> Control over investment choices. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/Before-you-start-an-SMSF" class="text-blue-600 hover:underline">ATO Benefits</a></li>
+                    <li><strong>Tax advantages?</strong> Concessional tax rates on earnings. <a href="https://www.smsfassociation.com" class="text-blue-600 hover:underline">SMSF Association</a></li>
+                    <li><strong>Flexibility?</strong> Tailored strategies for retirement goals. <a href="https://smsfservices.au/smsf-compliance" class="text-blue-600 hover:underline">SMSF Services</a></li>
+                    <li><strong>Estate planning?</strong> Direct control over asset distribution. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/Paying-SMSF-benefits" class="text-blue-600 hover:underline">ATO Benefits</a></li>
+                    <li><strong>Cost-effectiveness?</strong> May be cheaper for high balances. <a href="https://www.smsfassociation.com" class="text-blue-600 hover:underline">SMSF Association</a></li>
+                </ul>
+            </div>
+            <h3 class="text-2xl font-semibold accordion-button bg-blue-200 p-4 rounded mt-4">How to Set Up an SMSF?</h3>
+            <div class="accordion-content bg-white p-4 rounded">
+                <ul class="list-disc pl-6 text-lg">
+                    <li><strong>First step?</strong> Appoint trustees or a corporate trustee. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/Setting-up-an-SMSF" class="text-blue-600 hover:underline">ATO Setup</a></li>
+                    <li><strong>Trust deed?</strong> Create a compliant trust deed. <a href="https://smsfservices.au/smsf-compliance" class="text-blue-600 hover:underline">SMSF Services</a></li>
+                    <li><strong>Register with ATO?</strong> Obtain an ABN and register. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/Setting-up-an-SMSF" class="text-blue-600 hover:underline">ATO Setup</a></li>
+                    <li><strong>Bank account?</strong> Set up a dedicated SMSF account. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/Protect-your-SMSF-s-bank-account" class="text-blue-600 hover:underline">ATO Bank Account</a></li>
+                    <li><strong>Investment strategy?</strong> Develop and document a strategy. <a href="https://www.smsfassociation.com" class="text-blue-600 hover:underline">SMSF Association</a></li>
+                </ul>
+            </div>
+            <h3 class="text-2xl font-semibold accordion-button bg-blue-200 p-4 rounded mt-4">How to Manage an SMSF?</h3>
+            <div class="accordion-content bg-white p-4 rounded">
+                <ul class="list-disc pl-6 text-lg">
+                    <li><strong>Annual audit?</strong> Arrange an independent audit yearly. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/SMSF-administration-and-reporting" class="text-blue-600 hover:underline">ATO Audit</a></li>
+                    <li><strong>Record keeping?</strong> Maintain accurate records for 5+ years. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/SMSF-administration-and-reporting" class="text-blue-600 hover:underline">ATO Records</a></li>
+                    <li><strong>Compliance?</strong> Adhere to SIS Act and ATO rules. <a href="https://www.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/SMSF-regulation-and-compliance" class="text-blue-600 hover:underline">ATO Compliance</a></li>
+                    <li><strong>Asset valuation?</strong> Value assets annually at market rates. <a href="https://tdv.ato.acc.ato.gov.au/Individuals-and-families/Super-for-individuals-and-families/Self-managed-super-funds/Guide-to-valuing-SMSF-assets" class="text-blue-600 hover:underline">ATO Valuation</a></li>
+                    <li><strong>Tax obligations?</strong> Lodge annual returns with ATO. <a href="https://www.smsfassociation.com" class="text-blue-600 hover:underline">SMSF Association</a></li>
+                </ul>
+            </div>
+        </section>
+    </main>
+    <footer class="bg-blue-600 text-white p-4 text-center">
+        <p>&copy; 2025 SMSF Info Hub. All rights reserved.</p>
+    </footer>
+</body>
+</html>
