@@ -1,0 +1,189 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wealth Calculator - SMSF Information Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: #333;
+        }
+        header {
+            background-color: #003087;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        nav {
+            background-color: #f4f4f4;
+            padding: 10px 0;
+            text-align: center;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #003087;
+            font-weight: bold;
+        }
+        nav a:hover {
+            color: #0056b3;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #003087;
+        }
+        .calculator {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .calculator label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        .calculator input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .calculator button {
+            background-color: #003087;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .calculator button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #003087;
+        }
+        footer {
+            background-color: #003087;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SMSF Information Hub</h1>
+    </header>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="top-questions.html">Top Questions</a>
+        <a href="advantages-disadvantages.html">Advantages & Disadvantages</a>
+        <a href="hot-cases.html">Hot Cases</a>
+        <a href="wealth-calculator.html">Wealth Calculator</a>
+    </nav>
+    <div class="container">
+        <h1>Wealth Calculator</h1>
+        <p>Estimate your retirement savings based on your current age, income, desired retirement age, and expected investment return. This calculator assumes contributions to a Self-Managed Super Fund (SMSF) and is aligned with Australian Taxation Office (ATO) preservation age rules (age 60).</p>
+        <div class="calculator">
+            <label for="currentAge">Current Age:</label>
+            <input type="number" id="currentAge" min="18" max="100" required>
+            
+            <label for="income">Annual Income ($):</label>
+            <input type="number" id="income" min="0" required>
+            
+            <label for="retireAge">Desired Retirement Age:</label>
+            <input type="number" id="retireAge" min="18" max="100" required>
+            
+            <label for="investmentReturn">Expected Annual Investment Return (%):</label>
+            <input type="number" id="investmentReturn" min="0" max="20" step="0.1" required>
+            
+            <button onclick="calculateWealth()">Calculate</button>
+            <div id="result"></div>
+        </div>
+        <p><strong>Note:</strong> This calculator provides an estimate based on a compound interest formula and assumes 15% concessional contributions from your income, as per ATO guidelines. Actual results may vary due to market conditions, fees, and tax rules. Consult a licensed financial adviser for personalized advice. <a href="https://www.ato.gov.au/Individuals/Superannuation/In-detail/Growing-your-super/Super-contributions---too-much-can-mean-extra-tax/" target="_blank">ATO Super Contributions</a></p>
+    </div>
+    <footer>
+        <p>&copy; 2025 SMSF Information Hub. All rights reserved.</p>
+    </footer>
+    <script>
+        function calculateWealth() {
+            const currentAge = parseInt(document.getElementById('currentAge').value);
+            const income = parseFloat(document.getElementById('income').value);
+            const retireAge = parseInt(document.getElementById('retireAge').value);
+            const investmentReturn = parseFloat(document.getElementById('investmentReturn').value) / 100;
+            
+            if (currentAge >= retireAge || retireAge > 60) {
+                document.getElementById('result').innerHTML = "Error: Current age must be less than retirement age, and retirement age cannot exceed 60 (preservation age).";
+                return;
+            }
+            
+            const years = 60 - currentAge;
+            const contributionRate = 0.15; // Assuming 15% concessional contributions
+            const annualContribution = income * contributionRate;
+            
+            // Compound interest formula: FV = P * (1 + r)^n
+            // Where P is annual contribution, r is annual return, n is years
+            let futureValue = 0;
+            for (let i = 0; i < years; i++) {
+                futureValue = (futureValue + annualContribution) * (1 + investmentReturn);
+            }
+            
+            futureValue = Math.round(futureValue).toLocaleString();
+            document.getElementById('result').innerHTML = `Estimated SMSF balance at age 60: $${futureValue}`;
+        }
+    </script>
+</body>
+</html>
