@@ -1,0 +1,242 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wealth Calculator - SMSF Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #004aad;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        nav {
+            background-color: #003087;
+            overflow: hidden;
+        }
+        nav a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        nav a:hover {
+            background-color: #005cbf;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        h1, h2 {
+            color: #004aad;
+        }
+        .calculator-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+        }
+        .calculator-form label {
+            font-weight: bold;
+        }
+        .calculator-form input {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .calculator-form button {
+            padding: 10px;
+            background-color: #004aad;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .calculator-form button:hover {
+            background-color: #003087;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #004aad;
+            color: white;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #004aad;
+            color: white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SMSF Wealth Calculator</h1>
+    </header>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="top_questions.html">Top Questions</a>
+        <a href="advantages_disadvantages.html">Advantages & Disadvantages</a>
+        <a href="hot_cases.html">Hot Cases</a>
+        <a href="wealth_calculator.html">Wealth Calculator</a>
+    </nav>
+    <div class="container">
+        <h2>Calculate Your SMSF Wealth</h2>
+        <p>Enter your details to estimate your superannuation balance at preservation age (60) based on your contributions and expected investment returns.</p>
+        <form id="wealthCalculator" class="calculator-form">
+            <label for="currentAge">Current Age:</label>
+            <input type="number" id="currentAge" min="18" max="60" required>
+            <label for="income">Annual Income ($):</label>
+            <input type="number" id="income" min="0" required>
+            <label for="retireAge">Intended Retirement Age:</label>
+            <input type="number" id="retireAge" min="18" max="70" required>
+            <label for="investmentReturn">Expected Annual Investment Return (%):</label>
+            <input type="number" id="investmentReturn" min="0" max="20" step="0.1" required>
+            <label for="initialBalance">Initial Super Balance ($):</label>
+            <input type="number" id="initialBalance" min="0" value="0">
+            <button type="submit">Calculate</button>
+        </form>
+        <div id="results" style="margin-top: 20px;">
+            <h3>Results</h3>
+            <p id="finalBalance"></p>
+            <h3>Yearly Breakdown</h3>
+            <table id="breakdownTable">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Age</th>
+                        <th>Contribution ($)</th>
+                        <th>Year-End Balance ($)</th>
+                    </tr>
+                </thead>
+                <tbody id="breakdownBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2025 SMSF Guide. All rights reserved.</p>
+    </footer>
+    <script>
+        document.getElementById('wealthCalculator').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get input values
+            const currentAge = parseInt(document.getElementById('currentAge').value);
+            const income = parseFloat(document.getElementById('income').value);
+            const retireAge = parseInt(document.getElementById('retireAge').value);
+            const investmentReturn = parseFloat(document.getElementById('investmentReturn').value) / 100;
+            const initialBalance = parseFloat(document.getElementById('initialBalance').value) || 0;
+            const preservationAge = 60;
+
+            // Validate inputs
+            if (currentAge >= retireAge || retireAge > preservationAge) {
+                alert('Retirement age must be greater than current age and less than or equal to preservation age (60).');
+                return;
+            }
+
+            // Assumptions based on ATO regulations
+            const concessionalCap = 30000; // 2025/26 cap
+            const employerSG = 0.115; // Superannuation Guarantee rate (11.5% for 2025/26)
+            const taxRate = 0.15; // Concessional contributions tax
+
+            // Calculate yearly contributions and balances
+            let balance = initialBalance;
+            const breakdown = [];
+            const years = preservationAge - currentAge;
+
+            for (let i = 0; i < years; i++) {
+                const age = currentAge + i;
+                // Calculate contributions (SG only, capped at concessional cap)
+                let contribution = Math.min(income * employerSG, concessionalCap) * (1 - taxRate);
+                if (age >= retireAge) contribution = 0; // No contributions after retirement
+                // Calculate year-end balance with compound interest
+                balance = balance * (1 + investmentReturn) + contribution;
+                breakdown.push({
+                    year: i + 1,
+                    age: age,
+                    contribution: contribution.toFixed(2),
+                    balance: balance.toFixed(2)
+                });
+            }
+
+            // Display results
+            document.getElementById('finalBalance').innerText = `Estimated Super Balance at Age ${preservationAge}: $${balance.toFixed(2)}`;
+            const tbody = document.getElementById('breakdownBody');
+            tbody.innerHTML = '';
+            breakdown.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.year}</td>
+                    <td>${row.age}</td>
+                    <td>${row.contribution}</td>
+                    <td>${row.balance}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    </script>
+</body>
+</html>
